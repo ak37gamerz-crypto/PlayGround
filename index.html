@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#05070d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Rocket Duel — a fast 1v1 car-soccer showdown against a bot. First to 3 goals. Touch and tilt controls.">
+  <title>Rocket Duel — 1v1 First to 3</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/bungee.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="assets/fonts/archivo-600.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app">
+    <canvas id="arena" aria-label="Rocket Duel arena"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <div class="hud is-hidden" id="hud">
+      <button class="icon-btn" id="soundBtn" aria-label="Toggle sound" aria-pressed="true">
+        <svg class="ico ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg class="ico ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="m16 9 5 6m0-6-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+
+      <div class="scoreboard" aria-label="Scoreboard">
+        <div class="team team-you">
+          <div class="team-meta"><span class="team-name">YOU</span><span class="pips" id="pPips"><i></i><i></i><i></i></span></div>
+          <span class="score" id="pScore">0</span>
+        </div>
+        <div class="score-mid">
+          <span class="versus">1V1</span>
+          <span class="first-to" id="matchTag">FIRST TO 3</span>
+        </div>
+        <div class="team team-bot">
+          <span class="score" id="bScore">0</span>
+          <div class="team-meta"><span class="team-name">BOT</span><span class="pips" id="bPips"><i></i><i></i><i></i></span></div>
+        </div>
+      </div>
+
+      <button class="icon-btn" id="pauseBtn" aria-label="Pause game">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.4"/><rect x="14" y="5" width="4" height="14" rx="1.4"/></svg>
+      </button>
+    </div>
+
+    <div class="announce" id="announce" aria-live="polite">
+      <div class="announce-main" id="annMain"></div>
+      <div class="announce-sub" id="annSub"></div>
+    </div>
+
+    <div class="controls is-hidden" id="controls">
+      <div class="stick-wrap" id="stickWrap">
+        <div class="stick" id="stick">
+          <span class="stick-tick t1"></span><span class="stick-tick t2"></span><span class="stick-tick t3"></span><span class="stick-tick t4"></span>
+          <div class="knob" id="knob"><span></span></div>
+        </div>
+        <span class="control-label">DRIVE</span>
+      </div>
+
+      <div class="tilt-meter is-hidden" id="tiltMeter" aria-hidden="true">
+        <span class="tilt-line"></span>
+        <span class="tilt-dot" id="tiltDot"></span>
+        <span class="tilt-caption">TILT</span>
+      </div>
+
+      <div class="action-pad">
+        <button class="action jump" id="jumpBtn" aria-label="Jump">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6m0 0-5 5m5-5 5 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>JUMP</span>
+        </button>
+        <button class="action boost" id="boostBtn" aria-label="Boost">
+          <span class="boost-ring" id="boostRing"></span>
+          <span class="boost-inner">
+            <span class="boost-word">BOOST</span>
+            <span class="boost-value" id="boostValue">100</span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <section class="screen menu" id="menu">
+      <div class="menu-top">
+        <div class="logo">
+          <span class="logo-kicker">OMG // 1V1 ARENA</span>
+          <h1><span class="logo-rocket">ROCKET</span><span class="logo-duel">DUEL</span></h1>
+          <p class="tagline">CAR SOCCER. ONE BOT. <b>FIRST TO THREE.</b></p>
+        </div>
+
+        <div class="menu-card">
+          <div class="option-block">
+            <span class="option-label">BOT DIFFICULTY</span>
+            <div class="segmented" id="difficulty" role="group" aria-label="Bot difficulty">
+              <button data-diff="rookie">ROOKIE</button>
+              <button data-diff="pro" class="is-active">PRO</button>
+              <button data-diff="allstar">ALL-STAR</button>
+            </div>
+          </div>
+
+          <button class="option-row" id="tiltBtn" aria-pressed="false">
+            <span class="option-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3 12c1.5-2 3-2 4.5 0M16.5 12c1.5 2 3 2 4.5 0" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".8"/></svg>
+            </span>
+            <span class="option-copy">
+              <span class="option-title">Motion tilt</span>
+              <span class="option-sub" id="tiltState">Optional · off</span>
+            </span>
+            <span class="switch" aria-hidden="true"><i></i></span>
+          </button>
+
+          <div class="how">
+            <div class="how-item"><span class="key">STICK</span><span>Drag left to drive</span></div>
+            <div class="how-item"><span class="key">BOOST</span><span>Hold to burn</span></div>
+            <div class="how-item"><span class="key">JUMP</span><span>Tap twice to flip</span></div>
+          </div>
+
+          <button class="play-btn" id="playBtn">
+            <span class="play-main">KICK OFF</span>
+            <span class="play-sub">1 V 1 · FIRST TO 3</span>
+          </button>
+
+          <p class="micro" id="iosHint">iPhone / iPad: tilt asks for motion access the first time.</p>
+          <p class="micro desktop-hint">Desktop: <b>WASD</b> or arrows · <b>Shift</b> boost · <b>Space</b> jump</p>
+        </div>
+      </div>
+      <footer class="menu-foot">
+        <span class="live-dot"></span> 60 FPS TOUCH ARENA <span class="foot-sep">/</span> SOUND ON <span class="foot-sep">/</span> NO DOWNLOAD
+      </footer>
+    </section>
+
+    <section class="screen modal is-hidden" id="pauseMenu" aria-label="Paused">
+      <div class="modal-card">
+        <span class="modal-kicker">MATCH PAUSED</span>
+        <h2>HOLD UP</h2>
+        <div class="pause-score" id="pauseScore">YOU 0 — 0 BOT</div>
+        <button class="primary-btn" id="resumeBtn">RESUME</button>
+        <div class="modal-grid">
+          <button class="ghost-btn" id="restartBtn">RESTART</button>
+          <button class="ghost-btn" id="quitBtn">MAIN MENU</button>
+        </div>
+        <button class="option-row compact" id="pauseTiltBtn" aria-pressed="false">
+          <span class="option-copy">
+            <span class="option-title">Motion tilt</span>
+            <span class="option-sub" id="pauseTiltState">Optional · off</span>
+          </span>
+          <span class="switch" aria-hidden="true"><i></i></span>
+        </button>
+      </div>
+    </section>
+
+    <section class="screen modal is-hidden" id="endMenu" aria-label="Match result">
+      <div class="modal-card result-card">
+        <span class="modal-kicker" id="endKicker">MATCH COMPLETE</span>
+        <h2 id="endTitle">VICTORY</h2>
+        <div class="final-score" id="finalScore">3 <span>:</span> 1</div>
+        <p class="result-copy" id="endCopy">Clean sweep. The bot wants a rematch.</p>
+        <button class="primary-btn" id="rematchBtn">REMATCH</button>
+        <button class="ghost-btn wide" id="endMenuBtn">MAIN MENU</button>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <div class="rotate-hint" id="rotateHint">
+      <div class="rotate-phone">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <h3>BEST IN PORTRAIT</h3>
+        <p>Rotate your phone upright for the biggest arena.</p>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>

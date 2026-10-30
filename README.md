@@ -1,5 +1,18 @@
 # PlayGround
 
+## Rocket Duel — 1v1 car soccer
+
+A phone-and-tablet-first Rocket League-style duel against a bot. First to 3 goals wins.
+
+- **Touch controls**: drag the left stick to drive, JUMP to hop (tap twice to flip), BOOST to burn.
+- **Optional tilt steering**: enable Motion tilt on the start or pause screen. On iPhone/iPad, iOS asks for Motion & Orientation access on the first tap.
+- **Keyboard**: `WASD` / arrow keys to drive, `Shift` to boost, `Space` to jump.
+- **Difficulties**: ROOKIE, PRO, ALL-STAR.
+
+It is a static site — plain HTML, CSS, Canvas 2D and JavaScript, with no build step. Serve the folder with any static server (for example `./start.sh`, then open the printed URL).
+
+Files: `index.html`, `styles.css`, `game.js`, and `assets/` (bundled fonts and icon).
+
 <!-- omgithub:readme:start -->
 ## 🚀 Build, play, and remix with OMGithub
 
